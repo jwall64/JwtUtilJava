@@ -1,0 +1,15 @@
+[versions]
+junit = "5.10.2"
+slf4j = "2.0.16"
+jbr-anno = "24.0.1"
+midnightcfg = "3.5.2"
+
+[libraries]
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref="jbr-anno" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+midnightcfg = { module = "org.wallentines:midnightcfg-api", version.ref = "midnightcfg"}
+midnightcfg-codec-json = { module = "org.wallentines:midnightcfg-codec-json", version.ref = "midnightcfg"}
