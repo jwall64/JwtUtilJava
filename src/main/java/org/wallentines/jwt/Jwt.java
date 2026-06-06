@@ -236,35 +236,35 @@ public interface Jwt {
         }
 
         public Builder withIssuer(String issuer) {
-            return withHeaderClaim(CLAIM_ISSUER, issuer);
+            return withClaim(CLAIM_ISSUER, issuer);
         }
 
         public Builder withSubject(String subject) {
-            return withHeaderClaim(CLAIM_SUBJECT, subject);
+            return withClaim(CLAIM_SUBJECT, subject);
         }
 
         public Builder withAudience(String audience) {
-            return withHeaderClaim(CLAIM_AUDIENCE, audience);
+            return withClaim(CLAIM_AUDIENCE, audience);
         }
 
         public Builder expiresIn(long seconds) {
-            return withHeaderClaim(CLAIM_EXPIRATION, (System.currentTimeMillis() / 1000) + seconds);
+            return withClaim(CLAIM_EXPIRATION, (System.currentTimeMillis() / 1000) + seconds);
         }
 
         public Builder expiresAt(long timestamp) {
-            return withHeaderClaim(CLAIM_EXPIRATION, timestamp);
+            return withClaim(CLAIM_EXPIRATION, timestamp);
         }
 
         public Builder validIn(long seconds) {
-            return withHeaderClaim(CLAIM_NOT_BEFORE, (System.currentTimeMillis() / 1000) + seconds);
+            return withClaim(CLAIM_NOT_BEFORE, (System.currentTimeMillis() / 1000) + seconds);
         }
 
         public Builder validAt(long timestamp) {
-            return withHeaderClaim(CLAIM_NOT_BEFORE, timestamp);
+            return withClaim(CLAIM_NOT_BEFORE, timestamp);
         }
 
         public Builder withJwtId(String id) {
-            return withHeaderClaim(CLAIM_JWT_ID, id);
+            return withClaim(CLAIM_JWT_ID, id);
         }
 
         public Builder writeKeyId(boolean writeKeyId) {
