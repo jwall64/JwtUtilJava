@@ -8,7 +8,6 @@ public record KeyVerifier(boolean requireAlgorithm, boolean requireUse, boolean 
     public static KeyVerifier DEFAULT = new KeyVerifier(true, false, false);
 
     public boolean verify(JsonWebKey key, Algorithm alg, KeyUse use, KeyOperation op) {
-
         return key.mayUseAlg(alg, !requireAlgorithm) && key.mayUseFor(use, !requireUse) && key.mayUseOp(op, !requireOps);
     }
 

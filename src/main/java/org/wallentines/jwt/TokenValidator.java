@@ -13,6 +13,18 @@ import org.wallentines.mdcfg.serializer.Serializer;
 
 public interface TokenValidator {
 
+    public static final Registry<String, Serializer<? extends TokenValidator>> REGISTRY = Registry.createStringRegistry(); 
+
+    public static final Serializer<TokenValidator> SERIALIZER = REGISTRY.byIdSerializer().fieldOf("type").dispatch(
+        ser -> ser,
+        val -> val.serializer()
+    );
+
+    static <T extends TokenValidator> Serializer<T> register(String key, Serializer<T> value) {
+        REGISTRY.register(key, value);
+        return value;
+    }
+
     boolean validate(Jwt token);
 
     Serializer<? extends TokenValidator> serializer();
@@ -51,8 +63,8 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<ExpectClaims> SERIALIZER = ConfigObject.SERIALIZER.mapOf().fieldOf("claims")
-                .flatMap(ExpectClaims::claims, ExpectClaims::new);
+        public static final Serializer<ExpectClaims> SERIALIZER = register("expect_claims", ConfigObject.SERIALIZER.mapOf().fieldOf("claims")
+                .flatMap(ExpectClaims::claims, ExpectClaims::new));
     }
 
     record ExpectPattern(Map<String, Pattern> patterns) implements TokenValidator {
@@ -72,8 +84,8 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<ExpectPattern> SERIALIZER = ExtraSerializers.PATTERN.mapOf().fieldOf("claims")
-                .flatMap(ExpectPattern::patterns, ExpectPattern::new);
+        public static final Serializer<ExpectPattern> SERIALIZER = register("expect_pattern", ExtraSerializers.PATTERN.mapOf().fieldOf("claims")
+                .flatMap(ExpectPattern::patterns, ExpectPattern::new));
     }
 
     record ExpectPresent(List<String> claimKeys) implements TokenValidator {
@@ -91,9 +103,10 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<ExpectPresent> SERIALIZER = Serializer.STRING.listOf().mapToList().fieldOf("claims")
-                .flatMap(ExpectPresent::claimKeys, ExpectPresent::new);
+        public static final Serializer<ExpectPresent> SERIALIZER = register("expect_present", Serializer.STRING.listOf().mapToList().fieldOf("claims")
+                .flatMap(ExpectPresent::claimKeys, ExpectPresent::new));
     }
+
 
     class SingleUse implements TokenValidator {
         private final Map<String, Long> usedTokens;
@@ -134,11 +147,11 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<SingleUse> SERIALIZER = ObjectSerializer.create(
+        public static final Serializer<SingleUse> SERIALIZER = register("single_use", ObjectSerializer.create(
             Serializer.STRING.<SingleUse>entry("claimId", su -> su.claimId).orElse("jti"),
             Serializer.LONG.<SingleUse>entry("expirationMs", su -> su.expirationMs).orElse(60 * 60 * 1000L),
             SingleUse::new
-        );
+        ));
     }
 
     record AllOf(List<TokenValidator> validators) implements TokenValidator {
@@ -157,10 +170,10 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<AllOf> SERIALIZER = ObjectSerializer.create(
+        public static final Serializer<AllOf> SERIALIZER = register("all_of", ObjectSerializer.create(
             TokenValidator.SERIALIZER.listOf().mapToList().<AllOf>entry("validators", v -> v.validators),
             AllOf::new
-        );
+        ));
     }
 
     record AnyOf(List<TokenValidator> validators) implements TokenValidator {
@@ -179,10 +192,10 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<AnyOf> SERIALIZER = ObjectSerializer.create(
+        public static final Serializer<AnyOf> SERIALIZER = register("any_of", ObjectSerializer.create(
             TokenValidator.SERIALIZER.listOf().mapToList().<AnyOf>entry("validators", v -> v.validators),
             AnyOf::new
-        );
+        ));
     }
 
     record Not(TokenValidator validator) implements TokenValidator {
@@ -195,27 +208,10 @@ public interface TokenValidator {
             return SERIALIZER;
         }
 
-        public static final Serializer<Not> SERIALIZER = ObjectSerializer.create(
+        public static final Serializer<Not> SERIALIZER = register("not", ObjectSerializer.create(
             TokenValidator.SERIALIZER.<Not>entry("validator", v -> v.validator),
             Not::new
-        );
+        ));
     }
 
-    public static Registry<String, Serializer<? extends TokenValidator>> bootstrap(Registry<String, Serializer<? extends TokenValidator>> registry) {
-        registry.register("expect_claims", ExpectClaims.SERIALIZER);
-        registry.register("expect_pattern", ExpectPattern.SERIALIZER);
-        registry.register("expect_present", ExpectPresent.SERIALIZER);
-        registry.register("single_use", SingleUse.SERIALIZER);
-        registry.register("all_of", AllOf.SERIALIZER);
-        registry.register("any_of", AnyOf.SERIALIZER);
-        registry.register("not", Not.SERIALIZER);
-        return registry;
-    }
-
-    public static final Registry<String, Serializer<? extends TokenValidator>> REGISTRY = bootstrap(Registry.createStringRegistry());
-
-    public static final Serializer<TokenValidator> SERIALIZER = REGISTRY.byIdSerializer().fieldOf("type").dispatch(
-        ser -> ser,
-        val -> val.serializer()
-    );
 }

@@ -251,7 +251,7 @@ public record JsonWebKey(Meta meta, Value value) implements KeySupplier {
                 }
             };
 
-            Meta meta = new Meta(use, EnumSet.copyOf(operations), algorithm, keyId, x5u, List.copyOf(x5c), x5t, x5tS256);
+            Meta meta = new Meta(use, operations.isEmpty() ? null : EnumSet.copyOf(operations), algorithm, keyId, x5u, List.copyOf(x5c), x5t, x5tS256);
             return new JsonWebKey(meta, value);
         }
 
